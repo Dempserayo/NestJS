@@ -1,4 +1,4 @@
-import { Controller, Get, Param, NotFoundException, Post, Body, Delete } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, Post, Body, Delete, Put } from '@nestjs/common';
 
 interface User {
   id: string;
@@ -43,34 +43,38 @@ export class UsersController {
 
   // Primer modo de Post para crear usuarios, lo malo es que toca ingresar el ID a cada usuario que vayamos a crear y esto no es optimo.
   // si tuvieramos que crear mil usuarios, tendriamos que uno por uno ir dandole un ID y llevar un control sobre que ID tiene cada uno.
-  // @Post()
-  // createUser(@Body() body: User) {
-  //   this.users.push(body);
-  //   return body;
-  // }
-
-  // Con esta forma, podemos saber cual es el ID o ultimo elemento agregado y seguido de esto el ID de nuestro nuevo usuario sera el que le siga.
-  // sin tener que agregarlo, solo tendriamos que agregar nuestro nombre y email, ya el ID se estaria acomodando solo, en base al orden de nuestra lista de usuarios.
   @Post()
-  createUser(@Body() body: Omit<User, 'id'>) {
-    const lastUser = this.users[this.users.length - 1];
-    const newId = lastUser ? (Number(lastUser.id) + 1).toString() : '1';
-
-    const newUser: User = {
-      id: newId,
-      name: body.name,
-      email: body.email,
+  createUser(@Body() body: User) {
+    const newUser = {
+      ...body,
+      id: `${new Date().getTime()}`,
     };
-
     this.users.push(newUser);
     return newUser;
   }
+
+  // Con esta forma, podemos saber cual es el ID o ultimo elemento agregado y seguido de esto el ID de nuestro nuevo usuario sera el que le siga.
+  // sin tener que agregarlo, solo tendriamos que agregar nuestro nombre y email, ya el ID se estaria acomodando solo, en base al orden de nuestra lista de usuarios.
+  // @Post()
+  // createUser(@Body() body: Omit<User, 'id'>) {
+  //   const lastUser = this.users[this.users.length - 1];
+  //   const newId = lastUser ? (Number(lastUser.id) + 1).toString() : '1';
+
+  //   const newUser: User = {
+  //     id: newId,
+  //     name: body.name,
+  //     email: body.email,
+  //   };
+
+  //   this.users.push(newUser);
+  //   return newUser;
+  // }
 
   // Investigando me di cuenta que es mala practica? el tener que crear nuevamente una lista sin añadir lo que que se supone voy a eliminar, pues al hacer esto
   // se puede volver un poco tedioso y delicado si contamos con informacion importante.
   // @Delete(':id')
   // deleteUser(@Param('id') id: string) {
-  //   this.users = this.users.filter((user) => user.id !== id);
+  //   this.users = this.users.filter( (user) => user.id !== id);
   //   return {
   //     message: 'Usuario eliminado',
   //   };
@@ -87,7 +91,25 @@ export class UsersController {
 
     // ← Aquí sí lo borra del arreglo ORIGINAL
     this.users.splice(index, 1);
-
     return { message: 'Usuario eliminado correctamente' };
+  }
+
+  @Put(':id')
+  updateUser(@Param('id') id: string, @Body() changes: User) {
+    const position = this.users.findIndex((user) => user.id === id);
+    if (position === -1) {
+      return {
+        error: 'User not found',
+      };
+    }
+
+    const currentData = this.users[position];
+    const updateDataUser = {
+      ...currentData,
+      ...changes,
+    };
+
+    this.users[position] = updateDataUser;
+    return updateDataUser;
   }
 }
