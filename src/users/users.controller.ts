@@ -1,4 +1,4 @@
-import { Controller, Get, Param, NotFoundException, Post, Body, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Param, NotFoundException, Post, Body, Delete, Put, UnprocessableEntityException, ForbiddenException } from '@nestjs/common';
 
 interface User {
   id: string;
@@ -34,11 +34,39 @@ export class UsersController {
   @Get(':id')
   findUser(@Param('id') id: string) {
     const user = this.users.find((user) => user.id === id);
-    return user
-      ? user
-      : (() => {
-          throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
-        })();
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${id}  not found`);
+    }
+
+    if (user.id === '1') {
+      throw new ForbiddenException(`You are not allowed to access this user`);
+    }
+
+    // Probe los diferentes exceptions que hay en la documentacion oficial de NestJS, interesante, nada que agregar.
+    // BadRequestException 400
+    // UnauthorizedException 401
+    // NotFoundException 404
+    // ForbiddenException 403
+    // BadRequestException 403
+    // NotAcceptableException 406 - Not Acceptable
+    // RequestTimeoutException 408 - Request Timeout
+    // ConflictException 409 - Conflict
+    // GoneException 410 - Gone
+    // HttpVersionNotSupportedException 505 - HTTP Version Not Supported
+    // PayloadTooLargeException 413 - Payload too large
+    // UnsupportedMediaTypeException 415 - Unsupporte media type
+    // UnprocessableEntityException 422 - Unprocessable Entity
+    // InternalServerErrorException 500 - Internal Server Error
+    // NotImplementedException 500 - Internal Server Error
+    // ImATeapotException 418 - Im a teapol
+    // MethodNotAllowedException 405 - Method not Allowed
+    // BadGatewayException 502 - Bad Gateway
+    // ServiceUnavailableException 503 - Service Unvaliable
+    // GatewayTimeoutException 504
+    // PreconditionFailedException 412
+
+    return user;
   }
 
   // Primer modo de Post para crear usuarios, lo malo es que toca ingresar el ID a cada usuario que vayamos a crear y esto no es optimo.
@@ -104,6 +132,10 @@ export class UsersController {
     }
 
     const currentData = this.users[position];
+    const email = changes?.email;
+    if (email && !email.includes('@')) {
+      throw new UnprocessableEntityException('Email is not valid');
+    }
     const updateDataUser = {
       ...currentData,
       ...changes,
