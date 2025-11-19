@@ -1,4 +1,5 @@
 import { Controller, Get, Param, NotFoundException, Post, Body, Delete, Put, UnprocessableEntityException, ForbiddenException } from '@nestjs/common';
+import { CreateUserDto } from 'src/models/dto/user/user.dto';
 
 interface User {
   id: string;
@@ -72,7 +73,7 @@ export class UsersController {
   // Primer modo de Post para crear usuarios, lo malo es que toca ingresar el ID a cada usuario que vayamos a crear y esto no es optimo.
   // si tuvieramos que crear mil usuarios, tendriamos que uno por uno ir dandole un ID y llevar un control sobre que ID tiene cada uno.
   @Post()
-  createUser(@Body() body: User) {
+  createUser(@Body() body: CreateUserDto) {
     const newUser = {
       ...body,
       id: `${new Date().getTime()}`,
