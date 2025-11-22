@@ -5,12 +5,14 @@ import { UsersController } from './users/users.controller';
 import { ProductController } from './product/product.controller';
 import { UsersService } from './users/users.service';
 import { ConfigModule } from '@nestjs/config';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    UsersModule,
   ],
   controllers: [AppController, UsersController, ProductController],
   providers: [AppService, UsersService],
